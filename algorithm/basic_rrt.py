@@ -27,8 +27,8 @@ class BasicRRT:
 
 
     def randomPoint(self):
-        x = random.randint(10, 390)
-        y = random.randint(10, 390)
+        x = random.randint(10, 540)
+        y = random.randint(10, 540)
         return (x, y)
     
     

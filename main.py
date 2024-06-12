@@ -11,7 +11,7 @@ import cv2
 import random
 
 random_number = random.randint(0, 3)
-# random_number =3
+random_number =3
 
 print(random_number)
 
@@ -26,7 +26,7 @@ else :
 
 
 
-my_map = ParkingMap((50, 50), (300, 350), point)
+my_map = ParkingMap((50, 50), (480, 350), point)
 
 # rrt = BasicRRT(my_map,20)
 

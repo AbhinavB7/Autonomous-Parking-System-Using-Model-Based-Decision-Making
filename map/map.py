@@ -10,18 +10,19 @@ class ParkingMap:
         self.start_point = start_point
         self.end_point = end_point
         self.park_point = park_point
-        self.canvas_width = 420
-        self.canvas_height = 420
+        self.canvas_width = 550
+        self.canvas_height = 400
         
         pygame.init()
         self.screen = pygame.display.set_mode((self.canvas_width, self.canvas_height))
         pygame.display.set_caption("Parking Map Simulation")
 
         # Colors
-        self.blue_color = (255, 255, 0)  # Yellow
+        self.park_color = (255, 255, 255)  # Yellow
         self.green_color = (0, 255, 0)   # Green
         self.red_color = (255, 0, 0)     # Red
         self.line_color = (139,173,60) 
+        self.white_color = (255, 255, 255) # White
         self.goal_color = (0, 0, 255)     # Blue
 
         # Draw the parking lot and update the display
@@ -82,7 +83,7 @@ class ParkingMap:
         pygame.display.update()
 
     def addObstacle(self, top_left_x, top_left_y, color):
-        pygame.draw.rect(self.screen, color, (top_left_x, top_left_y, 40, 40))
+        pygame.draw.rect(self.screen, color, (top_left_x, top_left_y, 70, 40))
 
     def startEndPoint(self, start_point, end_point, park_point):
         pygame.draw.rect(self.screen, self.green_color, (start_point[0], start_point[1], 10, 10))
@@ -94,68 +95,48 @@ class ParkingMap:
 
     def drawParkingLots(self):
         # Draw vertical lines
-        self.drawLine((100, 100), (100, 300), self.blue_color, 2)
-        self.drawLine((300, 100), (300, 300), self.blue_color, 2)
-        self.drawLine((400, 100), (400, 300), self.blue_color, 2)
-
-        # Draw horizontal lines
-        # self.drawLine((0, 100), (100, 100), self.blue_color, 10)
-        # self.drawLine((0, 300), (100, 300), self.blue_color, 10)
-        # self.drawLine((300,100), (420,100), self.blue_color, 10)
-        # self.drawLine((300,300), (420,300), self.blue_color, 10)
-
+        self.drawLine((100, 100), (100, 300), self.park_color, 2)
+        self.drawLine((350, 100), (350, 300), self.park_color, 2)
+        self.drawLine((500, 100), (500, 300), self.park_color, 2)
+        
         self.hor_line = []
         hor0 = [(0, 100), (100, 100)]
         hor_0 = [(0, 300), (100, 300)]
-        # hor_r = [(300,100), (420,100)]
-        # hor_r1 = [(300,300), (420,300)]
         self.hor_line.append(hor0)
         self.hor_line.append(hor_0)
-        # self.hor_line.append(hor_r)
-        # self.hor_line.append(hor_r1)
+        
         for i in range(5):
             y = 100 + i * 50
             hor1 = [(100, y), (150, y)]
             hor2 = [(250, y), (300, y)]
             self.hor_line .append(hor1)
             self.hor_line .append(hor2)
-            self.drawLine((100, y), (150, y), self.blue_color, 2)
-            self.drawLine((250, y), (300, y), self.blue_color, 2)
+            self.drawLine((100, y), (175, y), self.park_color, 2)
+            self.drawLine((275, y), (350, y), self.park_color, 2)
           
-
-        # Draw angled lines
+        # Draw right side horizontal lines
         for j in range(5):
-            x = 400
+            x = 500
             y = 100 + j * 50
-            end_x = x - 50 
+            end_x = x - 75 
             end_y = y 
             hor3 = [(x, y), (end_x, end_y)]
             self.hor_line.append(hor3)
-            self.drawLine((x, y), (end_x, end_y), self.blue_color, 2)
-
-    # def isTolerance(self, point):
-    #     # Define the tolerance in pixels
-    #     tolerance = 10
-
-    #     # Check vertical lines
-    #     vertical_lines = [(100, 100, 300), (300, 100, 300), (400, 100, 250)]
-    #     for x, y_start, y_end in vertical_lines:
-    #         if x - tolerance <= point[0] <= x + tolerance and y_start - tolerance <= point[1] <= y_end + tolerance:
-    #             return True
-
-    #     # Check horizontal lines
-    #     horizontal_lines = []
-    #     for i in range(5):
-    #         y = 100 + i * 50
-    #         horizontal_lines.extend([(100, 150, y), (250, 300, y)])
+            self.drawLine((x, y), (end_x, end_y), self.park_color, 2)
+            
+        # add a font to the screen in vertical position
+        font = pygame.font.Font(None, 24)
+        text = font.render("ENTRY", 1, (255, 255, 255))
+        rotated_text = pygame.transform.rotate(text, -90)
+        self.screen.blit(rotated_text, (25, 25))
+        pygame.display.update()
+            
+        font = pygame.font.Font(None, 24)
+        text = font.render("EXIT", 1, (255, 255, 255))
+        rotated_text = pygame.transform.rotate(text, 90)
+        self.screen.blit(rotated_text, (455, 325))
+        pygame.display.update()
         
-    #     for x_start, x_end, y in horizontal_lines:
-    #         if x_start - tolerance <= point[0] <= x_end + tolerance and y - tolerance <= point[1] <= y + tolerance:
-    #             return True
-
-    #     return False
-
-
     def drawPoint(self, position, color):
         radius = 5  
         pygame.draw.circle(self.screen, color, position, radius)
@@ -163,7 +144,9 @@ class ParkingMap:
 
     def checkObstacle(self, start_pos, end_pos):
         # end_pos = (start_pos[0] + vector[0], start_pos[1] + vector[1])
-        if self.doIntersect(Point((100, 100)), Point((100, 300)),Point(start_pos), Point(end_pos)) or self.doIntersect(Point((300, 100)), Point((300, 300)),Point(start_pos), Point(end_pos)) or self.doIntersect(Point((400, 100)), Point((400, 300)),Point(start_pos), Point(end_pos)) :
+        if self.doIntersect(Point((100, 100)), Point((100, 300)),Point(start_pos), Point(end_pos)) or \
+            self.doIntersect(Point((350, 100)), Point((350, 300)),Point(start_pos), Point(end_pos)) or \
+                self.doIntersect(Point((500, 100)), Point((500, 300)),Point(start_pos), Point(end_pos)) :
             return True
         elif self.outOfBounds(end_pos):
             return True
@@ -178,11 +161,11 @@ class ParkingMap:
             return True
         return False
 
-        
-
     def isObstacle(self, start_pos, vector):
         end_pos = (start_pos[0] + vector[0], start_pos[1] + vector[1])
-        if self.doIntersect(Point((100, 100)), Point((100, 300)),Point(start_pos), Point(end_pos)) or self.doIntersect(Point((300, 100)), Point((300, 300)),Point(start_pos), Point(end_pos)) or self.doIntersect(Point((400, 100)), Point((400, 250)),Point(start_pos), Point(end_pos)) :
+        if self.doIntersect(Point((100, 100)), Point((100, 300)),Point(start_pos), Point(end_pos)) or \
+            self.doIntersect(Point((350, 100)), Point((350, 300)),Point(start_pos), Point(end_pos)) or \
+                self.doIntersect(Point((500, 100)), Point((500, 300)),Point(start_pos), Point(end_pos)) :
             return True
         else:
             for line in self.hor_line:
@@ -191,18 +174,17 @@ class ParkingMap:
             return False
         
     def drawVectorLine(self, start_pos, end_pos):
-        self.drawLine((start_pos[0], start_pos[1]), (end_pos[0], end_pos[1]), self.line_color, 1)
+        self.drawLine((start_pos[0], start_pos[1]), (end_pos[0], end_pos[1]), self.white_color, 1)
         self.updateMap()
 
     def drawVector(self, start_pos, vector):
         end_pos = (start_pos[0] + vector[0], start_pos[1] + vector[1])
-        self.drawLine((start_pos[0], start_pos[1]), (end_pos[0], end_pos[1]), self.line_color, 1)
+        self.drawLine((start_pos[0], start_pos[1]), (end_pos[0], end_pos[1]), self.white_color, 1)
         self.updateMap()
 
-    
     def updateMap(self):
         pygame.display.update()  
-        pygame.time.wait(10)   
+        pygame.time.wait(1)   
 
     def allowExit(self):
         for e in pygame.event.get():
@@ -220,8 +202,8 @@ class ParkingMap:
         sys.exit()
 
     def is_point_in_rectangle(self, top_x, top_y, px, py):
-        length = 40
-        breadth = 40
+        length = 90
+        breadth = 90
         bottom_x = top_x + length
         bottom_y = top_y + breadth
 
@@ -230,55 +212,56 @@ class ParkingMap:
         else:
             return False
 
+
     def definingObstacle(self):
         self.all_obstacles = []
+        
         for i in range(4):
             y = 105 + i * 50
             point1= [105,y]
-            point2 = [255,y]
+            point2 = [275,y]
             self.all_obstacles.append(point1)
             self.all_obstacles.append(point2)
-            # self.addObstacle(105,y,self.blue_color)
-            # self.addObstacle(255,y,self.blue_color)
-        # self.gettingRandomObs()
         
         self.right_obstacles = []
         for i in range(4):
             y = 105 + i * 50
-            point1= [355,y]
-            point2 = [445,y]
+            point1= [425,y]
+            point2 = [455,y]
             self.right_obstacles.append(point1)
             self.right_obstacles.append(point2)
-            # self.addObstacle(255,y,self.blue_color)
-            # self.addObstacle(405,y,self.blue_color)
-
-        self.addObstacle(self.all_obstacles[1][0],self.all_obstacles[1][1] ,self.blue_color)
+ 
+        self.addObstacle(self.all_obstacles[1][0],self.all_obstacles[1][1] ,self.park_color)
+        
         if self.park_point != (125,225):
-            self.addObstacle(self.all_obstacles[4][0],self.all_obstacles[4][1] ,self.blue_color)
-        self.addObstacle(self.all_obstacles[7][0],self.all_obstacles[7][1] ,self.blue_color)
-        self.addObstacle(self.all_obstacles[6][0],self.all_obstacles[6][1] ,self.blue_color)
-        self.addObstacle(self.all_obstacles[2][0],self.all_obstacles[2][1] ,self.blue_color)
-        self.addObstacle(self.all_obstacles[3][0],self.all_obstacles[3][1] ,self.blue_color)
-        self.addObstacle(self.all_obstacles[5][0],self.all_obstacles[5][1] ,self.blue_color)
+            self.addObstacle(self.all_obstacles[4][0],self.all_obstacles[4][1] ,self.park_color)
+        
+        self.addObstacle(self.all_obstacles[7][0],self.all_obstacles[7][1] ,self.park_color)
+        self.addObstacle(self.all_obstacles[6][0],self.all_obstacles[6][1] ,self.park_color)
+        self.addObstacle(self.all_obstacles[2][0],self.all_obstacles[2][1] ,self.park_color)
+        self.addObstacle(self.all_obstacles[3][0],self.all_obstacles[3][1] ,self.park_color)
+        self.addObstacle(self.all_obstacles[5][0],self.all_obstacles[5][1] ,self.park_color)
+        
         if self.park_point != (125, 125):
-            self.addObstacle(self.all_obstacles[0][0],self.all_obstacles[0][1] ,self.blue_color)
+            self.addObstacle(self.all_obstacles[0][0],self.all_obstacles[0][1] ,self.park_color)
 
-        self.addObstacle(self.right_obstacles[0][0],self.right_obstacles[0][1] ,self.blue_color) #first
-        self.addObstacle(self.right_obstacles[4][0],self.right_obstacles[4][1] ,self.blue_color) #third
-        self.addObstacle(self.right_obstacles[2][0],self.right_obstacles[2][1] ,self.blue_color) #second
+        self.addObstacle(self.right_obstacles[0][0],self.right_obstacles[0][1] ,self.park_color) #first
+        self.addObstacle(self.right_obstacles[4][0],self.right_obstacles[4][1] ,self.park_color) #third
+        self.addObstacle(self.right_obstacles[2][0],self.right_obstacles[2][1] ,self.park_color) #second
+        
         if self.park_point !=(365,270):
-            self.addObstacle(self.right_obstacles[6][0],self.right_obstacles[6][1] ,self.blue_color) #last
+            self.addObstacle(self.right_obstacles[6][0],self.right_obstacles[6][1] ,self.park_color) #last
 
     def allObstecalePoints(self,px,py):
         lis = []
-        skip =0
+        skip = 0
         # x = True
         if self.park_point == (125, 125):
-            skip =0
+            skip = 0
         elif self.park_point == (125,225):
             skip  = 4
         elif self.park_point == (365,270):
-            skip =6
+            skip = 6
         
         
         for i in range(8):
@@ -292,32 +275,8 @@ class ParkingMap:
             if self.is_point_in_rectangle(self.right_obstacles[i][0],self.right_obstacles[i][1],px,py ):
                 return True
             
-        # for j in range(8):
-        #     if self.is_point_in_rectangle(self.right_obstacles[i][0],self.right_obstacles[i][1],px,py ):
-        #         return True
-
         return False
     
     def drawCircle(self, position, radius, color):
         pygame.draw.circle(self.screen, color, position, radius, width=1)
         pygame.display.update()
-        
-
-
-
-
-
-    # def get_four_random_index(self):
-    #     return [random.randint(0, 7) for _ in range(4)]
-    
-    # def gettingRandomObs(self):
-    #     random_values = self.get_four_random_index()
-
-        # for r in random_values:
-        #     self.addObstacle(self.all_obstacles[r][0],self.all_obstacles[r][1] ,self.blue_color)
-
-
-
-
-    
-

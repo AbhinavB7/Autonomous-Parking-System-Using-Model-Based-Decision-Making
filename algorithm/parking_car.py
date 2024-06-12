@@ -1,17 +1,17 @@
+# Importing the required libraries
 import numpy as np
 from algorithm.basic_rrt import BasicRRT
 from map.map import *
 import math
 import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
-
-
 from map.node import Node
 import time
 
 
+# Defining the ParkingCarRRT class
 class ParkingCarRRT(BasicRRT):
-
+    # Constructor
     def __init__(self, map:ParkingMap, step_size:int):
         self.vehicle_length = 35
         self.robot_wheel_radius = 3
@@ -22,33 +22,43 @@ class ParkingCarRRT(BasicRRT):
         self.map.definingObstacle()
         super().__init__(self.map, step_size) 
 
+    # Function to calculate the possible increment
     def possibleIncrement(self,left_wheel_rpm, right_wheel_rpm,theta):
+        # rpm to radian per second
         left_wheel_rpm = ((2*np.pi)*left_wheel_rpm)/60
         right_wheel_rpm = ((2*np.pi)*right_wheel_rpm)/60
         dt = 0.5
+        # change in x, y and theta
         dx = 0.5*self.robot_wheel_radius*(left_wheel_rpm+right_wheel_rpm)*(math.cos(theta))*dt
         dy = 0.5*self.robot_wheel_radius*(left_wheel_rpm+right_wheel_rpm)*(math.sin(theta))*dt
         dtheta = (self.robot_wheel_radius/self.vehicle_length)*(right_wheel_rpm - left_wheel_rpm)*dt
         return dx , dy , dtheta
         
-        
+    # Function to move the vehicle
     def move(self, left, right,selected_node):
         current_node = selected_node
         node_list = []
 
+        # Loop to move the vehicle over a set number of steps
         for i in range(8):
+            # Calculating the new position and orientation of the vehicle
             current_points = current_node.getPoints()
             current_orentation = current_node.getOrientation()
 
+            # Calculating the change in x, y and theta
             dx , dy , dtheta = self.possibleIncrement(left,right, current_orentation)
             new_x = current_points[0] + dx
             new_y = current_points[1] + dy
             new_theta = current_orentation + dtheta
             new_points = (new_x,new_y)
+            
+            # Checking if the new position is in an obstacle
             if self.map.checkObstacle(current_points,new_points):
                 return
             if self.map.allObstecalePoints(new_points[0],new_points[1]):
                 return
+            
+            # Creating a new node and appending it to the node list
             new_node = Node(position=new_points,orientation=new_theta, parent= current_node )
             node_list.append(new_node)
             current_node = new_node
@@ -58,6 +68,7 @@ class ParkingCarRRT(BasicRRT):
 
         return node_list
     
+    # Action functions to move the vehicle
     def action1(self,node1):
         return self.move( left=0, right= self.left_rpm, selected_node= node1)
 
@@ -83,6 +94,7 @@ class ParkingCarRRT(BasicRRT):
         return self.move( left=self.right_rpm, right= self.left_rpm, selected_node= node1)
     
 
+    # Function to calculate the best possible move
     def bestPossibleMove(self, random_point, chosen_node):
         min_distance = None
         best_node = None
@@ -91,15 +103,20 @@ class ParkingCarRRT(BasicRRT):
             one_move_sub_nodes = move(chosen_node)
 
             if one_move_sub_nodes is not None:
+                
+                # Check if any node is close to the end point
                 for n in one_move_sub_nodes:
                     if n :
                         if self.euclidean_distance(n.position, self.end_point) < 10:
                             return True, n
-
+                
+                # get the last node from the list
                 new_node = one_move_sub_nodes[len(one_move_sub_nodes)-1]
 
+                # Calculate the distance between the new node and the random point
                 dr = self.euclidean_distance(new_node.position, random_point )
 
+                # Check if the distance is less than the minimum distance
                 if min_distance is None:
                     min_distance = dr
                     node_list = one_move_sub_nodes
@@ -109,6 +126,7 @@ class ParkingCarRRT(BasicRRT):
                     best_node = new_node
                     node_list = one_move_sub_nodes
         
+        # if there is a best node, draw the path and check if it is close to the end point
         if node_list :
             for sub_node in node_list:
                 if self.euclidean_distance(sub_node.position, self.end_point) < 10:
@@ -120,12 +138,14 @@ class ParkingCarRRT(BasicRRT):
         
         return False , best_node
     
+    # Define a method to check if the goal is reached
     def goalReached(self, node, end_node):
         if self.euclidean_distance(node.position, end_node.position) < 30:
                 print("Goal Reached")
                 self.path_points = self.backTrack(node )
                 return True
         
+    # Function to check if the parking point in within 100 units of the current position
     def checkParkProximity(self, current_position) :
         distance = self.euclidean_distance(current_position, self.park_point)
         if distance <= 100:
@@ -135,9 +155,11 @@ class ParkingCarRRT(BasicRRT):
             return True
         return False
     
+    # Function to calculate the euclidean distance
     def get_distance(self, p1, p2):
         return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
         
+    # Function to backtrack
     def backTrack(self, node, isparking = True):
         # Collect path points from the node to the root
 
